@@ -80,15 +80,19 @@ var(longitudA)
 ##  Apartado 3.
 
 ### Vamos a realizar un contraste de hipotesis para la media de una normal
-### desconocida la varianza, podemos suponer ques sigue una distribucion normal
+### desconocida la varianza, podemos suponer que sigue una distribucion normal
 ### por el apartado 1. Para ello usamos la funcion t.test
 
 t.test(longitudA, mu = 1.5,  alternative = "l")
 
-### El p-valor obtenido es 0.2521 que es un valor bastante elevado por lo que no
-### existen evidencias suficientes para decir que la media no pueda ser igual a
-### 1.5, es decir, no hay suficientes motivos para creer que la media esté
-### seguro por debajo de 1.5, podría estar por encima o ser igual
+### El p-valor obtenido es 0.2521 que no es un valor sufientemente bajo como
+### para asegurar estadisticamente que la media este por debajo de 1.5. Sin
+### embargo habría que notar que esto no nos impide considerar que la media sea
+### ciertamente inferior a 1.5, dado que hay que conocer lo que se está haciendo
+### realmente al hacer un test paramétrico.No decimos que la media sea superior
+### a 1.5, solo aseveramos que no tenemos las suficientes evidencias
+### estadísticas para asegurar que no lo sea. Simplemente no podemos estar
+### seguros
 
 
 
@@ -99,24 +103,94 @@ longitudB = c(2.1, 1.9, 1.5, 2.0, 1.3, 1.4)
 
 shapiro.test(longitudB)
 
-# El p-valor es 0.3135 que no es menor que 0.05 por lo que no podemos rechazar
-# que la muestra siga una distribución normal
+### El p-valor es 0.3135 que no es menor que 0.05 por lo que no podemos rechazar
+### que la muestra siga una distribución normal
 
 
 t.test(longitudB, mu = 1.5,  alternative = "l")
 
+### El p valor en este caso es 0.8951 por lo que con menos motivos que en el
+### caso de longitudA podemos decir que la media sea inferior a 1.5. En este
+### sentido podriamos hacer un segundo experimento, que es preguntarnos si hay
+### suficientes motivos para creer que de hecho es mayor que 1.5
 
-#   Apartado 5. Teniendo en cuenta que posiblemente haya una dependencia entre
-#   ambas y como queremos saber si la media ha variado lo suficiente, no podemos
-#   estudiar un estadistico para dos normales independientes y por ello vamos a
-#   estudiar la variable aleatoria A-B y hacer un contraste para esa variable
-#   (unidimensional)
+t.test(longitudB, mu = 1.5, alternative = "g")
 
+### Podemos observar por el p-valor 0.1049, que aunque tampoco tenemos
+### evidencias suficientes para defender que la media sea superior a 1.5, el
+### p-valor es muy inferior al caso anterior.
+
+## Apartado 5. Teniendo en cuenta que posiblemente haya una dependencia entre
+## ambas y como queremos saber si la media ha variado lo suficiente, no podemos
+## estudiar un estadistico para dos normales independientes y por ello vamos a
+## estudiar la variable aleatoria A-B y hacer un contraste para esa variable
+## (unidimensional)
+
+### Creacion de la variable aleatoria diferencia
 
 Dif = longitudB - longitudA
 
+
+### Realización del test de Shapiro_Will para comprobar si la variable
+### diferencia es una normal o al menos si no hay evidencias suficientes para
+### descartar esas hipótesis
+
 shapiro.test(Dif)
+
+### El p-value es 0.799 por lo que tenemos aun menos motivos que en los casos
+### anteriores para creer que la variable diferencia siga una distribucion que
+### no sea normal.
+
+### Realizamos el t.test, en este caso no hace falta especificar el mu puesto
+### que el que queremos es el por defecto siendo este cero, y tampoco hay que
+### especificar alternative porque es two-sided que es el por defecto también
+### (queremos comprobar si la media, la diferencia en este caso entre A y B, es
+### igual o no a cero)
 
 t.test(Dif)
 
+### El p-valor en este caso es 0.0372 por lo que sí que tenemos evidencias
+### suficientes para argumentar que efectivamente la media (la poblacional que
+### no la sabemos) ha cambiado entre A y B.
+
+### Otra opcion mas simple es usar la funcion t.test con el argumento para las
+### normales dependientes siendo este paired (que por defecto vale false y lo
+### cambiamos a true para este supuesto)
+
 t.test(longitudA, y = longitudB, paired = TRUE)
+
+### Podemos comprobar que el p-valor efectivamente es el mismo.
+
+
+## Apartado 6: Como recordamos, el objetivo del cambio de proceso era modificar
+## la media en 2.5 unidades, podemos comprobar que se ha modificado, pero
+## podemos preguntarnos si cumple su proposito.
+
+### Nota al ejercicio: Me parece evidente que no ha cambiado la media en 2.5,
+### por eso creo que en el documento hay un posible error de escritura y se
+### queria preguntar si el cambio de la media era a 2.5 y no un cambio de 2.5,
+### por lo que haré un subapartado a) y b) para cada supuesto
+
+
+### a) ¿Ha cambiado la media en 2.5 unidades? Realizamos el mismo test que antes
+### para la diferencia pero en este caso queremos saber si la diferencia entre
+### las medias es igual a 2.5
+
+
+t.test(longitudB, y = longitudA, paired = TRUE, mu = 2.5)
+
+### Como se puede comprobar el p-valor es una cantidad del orden de 1e-06, con
+### lo que existen evidencias mas que suficientes para rechazar la hipotesis de
+### que la media haya cambiado en 2.5
+
+### b) ¿Ha cambiado la media a 2.5? Teniendo en cuenta que hemos especificado
+### que no había criterios suficientes para oponerse a que la media del proceso
+### A pudiera ser 1.5, voy a suponer que el objetivo real de la pregunta es
+### cuestionar si la media ha podido cambiar una unidad de un proceso al otro.
+
+t.test(longitudB, y = longitudA, paired = TRUE, mu = 1)
+
+### Podemos comprobar de nuevo que sigue habiendo evidencias más que suficientes
+### para asegurar que la media no se ha modificado en una unidad, pero en este
+### caso con un p-valor un poco más aceptable. El proceso en todo caso no cumple
+### su cometido.
